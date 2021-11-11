@@ -31,9 +31,8 @@ class KNNClassifier(object):
         #     y_train.
         #  2. Save the number of classes as n_classes.
         # ====== YOUR CODE: ======
-        
+        print(dl_train)
         # ========================
-
         self.x_train = x_train
         self.y_train = y_train
         self.n_classes = n_classes
@@ -63,7 +62,9 @@ class KNNClassifier(object):
             #  - Set y_pred[i] to the most common class among them
             #  - Don't use an explicit loop.
             # ====== YOUR CODE: ======
-            
+            min_ks = np.argpartition(dist_matrix[i,:],k)[:k] # take min k indices
+            y_pred[i] = np.argmax(np.bincount(self.y_train[min_ks])) # take max of classes bins
+
             # ========================
 
         return y_pred
@@ -91,7 +92,10 @@ def l2_dist(x1: Tensor, x2: Tensor):
 
     dists = None
     # ====== YOUR CODE: ======
-    
+    dists = (-2 * (x2 @ x1.T) + torch.sum(x1 ** 2, axis=1) + torch.sum(x2 ** 2, axis=1)[:,np.newaxis]).T
+    assert(dists.shape == (x1.shape[0], x2.shape[0]))
+    dists = torch.sqrt(dists)
+
     # ========================
 
     return dists
@@ -111,7 +115,7 @@ def accuracy(y: Tensor, y_pred: Tensor):
     # TODO: Calculate prediction accuracy. Don't use an explicit loop.
     accuracy = None
     # ====== YOUR CODE: ======
-    
+    accuracy = len(y[(y == y_pred)]) / y.shape[0]
     # ========================
 
     return accuracy
@@ -142,7 +146,15 @@ def find_best_k(ds_train: Dataset, k_choices, num_folds):
         #  random split each iteration), or implement something else.
 
         # ====== YOUR CODE: ======
-        
+        cur_accs = []
+        splits = np.vsplit(ds_train, num_folds)
+        for val_indcies in splits:
+            val_set = ds_train[val_index]
+            train_set = ds_train[np.setdiff1d(splits, val_indcies)]
+            model.train(train_set)
+            preds = model.predict(val_set)
+            cur_accs.append((accuracy(val_test.labels, preds)))
+        accuracies.append(cur_accs)
         # ========================
 
     best_k_idx = np.argmax([np.mean(acc) for acc in accuracies])
