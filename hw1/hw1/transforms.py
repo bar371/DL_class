@@ -11,7 +11,6 @@ class TensorView(object):
 
     def __call__(self, tensor: torch.Tensor):
         # TODO: Use Tensor.view() to implement the transform.
-
         # ====== YOUR CODE: ======
         return tensor.view(self.view_dims)
         # ========================
@@ -30,7 +29,7 @@ class InvertColors(object):
         """
         # TODO: Invert the colors of the input image.
         # ====== YOUR CODE: ======
-        
+        return 1-x
         # ========================
 
 
@@ -42,7 +41,7 @@ class FlipUpDown(object):
         """
         # TODO: Flip the input image so that up is down.
         # ====== YOUR CODE: ======
-        
+        return torch.flip(x,[1])
         # ========================
 
 
@@ -67,6 +66,5 @@ class BiasTrick(object):
         #  Add a 1 at the beginning of the given tensor's feature dimension.
         #  Hint: See torch.cat().
         # ====== YOUR CODE: ======
-        
-        
+        return torch.cat((x, torch.ones(x.dim,1)), dim=1)
         # ========================
