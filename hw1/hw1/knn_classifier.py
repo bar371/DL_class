@@ -1,7 +1,9 @@
+from collections import Iterator
+
 import numpy as np
 import torch
 from torch import Tensor
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, Sampler
 
 import cs3600.dataloader_utils as dataloader_utils
 
@@ -31,7 +33,15 @@ class KNNClassifier(object):
         #     y_train.
         #  2. Save the number of classes as n_classes.
         # ====== YOUR CODE: ======
-        print(dl_train)
+        x_train = []
+        y_train = []
+        for tup in list(dl_train): # lazy
+            x_train.append(tup[0])
+            y_train.append(tup[1])
+        n_classes = len(set(y_train))
+        x_train = torch.cat(x_train)
+        y_train = torch.cat(y_train)
+
         # ========================
         self.x_train = x_train
         self.y_train = y_train
@@ -62,9 +72,8 @@ class KNNClassifier(object):
             #  - Set y_pred[i] to the most common class among them
             #  - Don't use an explicit loop.
             # ====== YOUR CODE: ======
-            min_ks = np.argpartition(dist_matrix[i,:],k)[:k] # take min k indices
+            min_ks = np.argpartition(dist_matrix[:,i],self.k)[:self.k] # take min k indices
             y_pred[i] = np.argmax(np.bincount(self.y_train[min_ks])) # take max of classes bins
-
             # ========================
 
         return y_pred
@@ -146,14 +155,28 @@ def find_best_k(ds_train: Dataset, k_choices, num_folds):
         #  random split each iteration), or implement something else.
 
         # ====== YOUR CODE: ======
+        class CV_Sampler(Sampler):
+            def __init__(self, datasource, indices: list):
+                super().__init__(datasource)
+                self.data_source = datasource
+                self.indices = indices
+            def __iter__(self):
+                for i in range(len(self.indices)):
+                    yield self.indices[i]
+
         cur_accs = []
-        splits = np.vsplit(ds_train, num_folds)
-        for val_indcies in splits:
-            val_set = ds_train[val_index]
-            train_set = ds_train[np.setdiff1d(splits, val_indcies)]
-            model.train(train_set)
-            preds = model.predict(val_set)
-            cur_accs.append((accuracy(val_test.labels, preds)))
+        splits = np.split(np.array((range(len(ds_train)))), num_folds) # Create num_fold splits
+        for fold, val_inds in enumerate(splits): # for each fold create a Sampler for train and val, and predict on val
+            val_sampler = CV_Sampler(ds_train, val_inds)
+            train_inds = np.setdiff1d(splits, val_inds)
+            train_sampler = CV_Sampler(ds_train, train_inds)
+            model.train(DataLoader(ds_train, sampler=train_sampler))
+            dl_valid = DataLoader(ds_train, sampler=val_sampler)
+            x_val, y_val = dataloader_utils.flatten(dl_valid)
+            preds = model.predict(x_val)
+            cur_acc = accuracy(y_val, preds)
+            cur_accs.append(cur_acc)
+            print(f'Testing K of {k}, Cur Fold {fold} Acc {cur_acc}')
         accuracies.append(cur_accs)
         # ========================
 
