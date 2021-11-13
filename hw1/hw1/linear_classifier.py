@@ -21,7 +21,8 @@ class LinearClassifier(object):
         #  Create weights tensor of appropriate dimensions
         #  Initialize it from a normal dist with zero mean and the given std.
 
-        self.weights = None
+        self.weights = torch.normal(mean=0, std=weight_std, size=(n_features,n_classes))
+
         # ====== YOUR CODE: ======
         
         # ========================
@@ -45,7 +46,8 @@ class LinearClassifier(object):
 
         y_pred, class_scores = None, None
         # ====== YOUR CODE: ======
-        
+        class_scores = x @ self.weights
+        y_pred = torch.argmax(class_scores, dim=1)
         # ========================
 
         return y_pred, class_scores
@@ -66,7 +68,8 @@ class LinearClassifier(object):
 
         acc = None
         # ====== YOUR CODE: ======
-        
+        assert(len(y) == len(y_pred))
+        acc = len(y[y == y_pred]) / len(y)
         # ========================
 
         return acc * 100

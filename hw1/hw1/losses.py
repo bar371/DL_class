@@ -52,7 +52,7 @@ class SVMHingeLoss(ClassifierLoss):
 
         loss = None
         # ====== YOUR CODE: ======
-        
+        # x_score = np.max(0, delta + x_scores - y_predicted[]
         # ========================
 
         # TODO: Save what you need for gradient calculation in self.grad_ctx
