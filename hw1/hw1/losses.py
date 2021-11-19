@@ -1,6 +1,6 @@
 import abc
 import torch
-
+import numpy as np
 
 class ClassifierLoss(abc.ABC):
     """
@@ -52,12 +52,19 @@ class SVMHingeLoss(ClassifierLoss):
 
         loss = None
         # ====== YOUR CODE: ======
-        # x_score = np.max(0, delta + x_scores - y_predicted[]
+        # for all indices take the max between 0 and the difference
+        # between the prediction score and the true label index from the predicted class
+        margins = x_scores - x_scores[torch.arange(x.shape[0]),y].unsqueeze(1) + self.delta
+        margins[margins < 0] = 0 # taking max between 0 and non negative for each index
+        margins[torch.arange(x.shape[0]), y] = 0 # the true label indices should not be punished
+        # sum the loss on the rows and take the mean
+        loss = torch.mean(torch.sum(margins, dim=1))
         # ========================
 
         # TODO: Save what you need for gradient calculation in self.grad_ctx
         # ====== YOUR CODE: ======
-        
+        self.grad_ctx  = {'margins' : margins , 'x' : x, 'y':y}
+
         # ========================
 
         return loss
@@ -75,7 +82,10 @@ class SVMHingeLoss(ClassifierLoss):
 
         grad = None
         # ====== YOUR CODE: ======
-        
+        G = self.grad_ctx['margins']
+        G[G > 0] = 1
+        G[torch.arange(self.grad_ctx['x'].shape[0]),self.grad_ctx['y']] -= torch.sum(G, dim=1).T
+        grad = (self.grad_ctx['x'].T @ G) / self.grad_ctx['x'].shape[0]
         # ========================
 
         return grad
