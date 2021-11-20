@@ -84,14 +84,52 @@ class LinearClassifier(object):
         max_epochs=100,
     ):
 
+
         Result = namedtuple("Result", "accuracy loss")
         train_res = Result(accuracy=[], loss=[])
         valid_res = Result(accuracy=[], loss=[])
 
         print("Training", end="")
         for epoch_idx in range(max_epochs):
-            total_correct = 0
-            average_loss = 0
+            train_b_counter, val_b_counter = 0, 0
+
+            total_correct_train = 0
+            average_loss_train = 0
+            total_correct_val = 0
+            average_loss_val = 0
+
+            for train_batch in dl_train:
+                # training vars
+                x_b_train = train_batch[0]
+                y_b_train = train_batch[1]
+                y_b_pred, x_scores = self.predict(x_b_train)
+
+                # get loss
+                average_loss_train += loss_fn.loss(x_b_train,y_b_train, x_scores, y_b_pred)
+                total_correct_train += self.evaluate_accuracy(y_b_train, y_b_pred)
+                train_b_counter += 1
+
+                # update weights , inc. regulaziation
+                self.weights = self.weights  - learn_rate * (loss_fn.grad() + weight_decay * self.weights)
+
+
+            for valid_batch in dl_valid:
+
+                # validation vars
+                x_b_val = valid_batch[0]
+                y_b_val = valid_batch[1]
+                y_b_pred_val, x_scores_val = self.predict(x_b_val)
+                total_correct_val += self.evaluate_accuracy(y_b_val, y_b_pred_val)
+                val_b_counter += 1
+                # get loss
+                average_loss_val += loss_fn.loss(x_b_val, y_b_val, x_scores_val, y_b_pred_val)
+
+            train_res.accuracy.append(total_correct_train / train_b_counter)
+            train_res.loss.append(average_loss_train / train_b_counter)
+            valid_res.accuracy.append(total_correct_val / val_b_counter)
+            valid_res.loss.append(average_loss_val / val_b_counter)
+
+
 
             # TODO:
             #  Implement model training loop.
@@ -126,7 +164,9 @@ class LinearClassifier(object):
         #  The output shape should be (n_classes, C, H, W).
 
         # ====== YOUR CODE: ======
-        
+        var = self.weights[1:,:] if has_bias else self.weights # skip the first feature if has_bais
+        w_images = var.T.view((self.n_classes, *img_shape))
+
         # ========================
 
         return w_images
@@ -139,7 +179,9 @@ def hyperparams():
     #  Manually tune the hyperparameters to get the training accuracy test
     #  to pass.
     # ====== YOUR CODE: ======
-    
+    hp['weight_std'] = 0.1
+    hp['learn_rate'] = 0.07
+    hp['weight_decay'] = 0.002
     # ========================
 
     return hp
