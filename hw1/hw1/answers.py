@@ -9,11 +9,24 @@ math (delimited with $$).
 # Part 1 answers
 
 part1_q1 = r"""
-**Your answer:**
+1. False. The in-sample error is estimated by the training loss :
+2. False. A solid minimal value should be used for both training and test, to give an extreme example, taking only 
+ the last 5 samples out of 50000 to be your test set does not represent your accuracy on the task. Moreover, 
+ taking only 5 samples for training and the rest for test would mean little to no learned distribution on the data,
+ and thus achieve poor accuracy. A good split would be 80:20 on large data-sets.
+3. True. In order to keep the test-set 'pure' and our hyper-parameter tuned with the validation set correct we should
+keep the test set separate from the cross-validation.
+4. False. The validation set is used for hyper-parameter tunning and not for estimation of the model's generalisation, 
+that task is saved for the test-set.
+ 
 """
 
 part1_q2 = r"""
-**Your answer:**
+** The approach is not justified. By re-training the training-set with different values from the hyper param 
+lambda while trying to find the best possible result on the test-set leads to over-fitting your test-set, The 
+Test set should always be sepereated from any hyper tunning and/or training. The correct approch would be
+to split the training set into training and validation (by cross-validation) and finding the best value 
+of lambda on the validation set.:**
 """
 
 # ==============

@@ -91,6 +91,19 @@ class LinearClassifier(object):
 
         print("Training", end="")
         for epoch_idx in range(max_epochs):
+
+            # TODO:
+            #  Implement model training loop.
+            #  1. At each epoch, evaluate the model on the entire training set
+            #     (batch by batch) and update the weights.
+            #  2. Each epoch, also evaluate on the validation set.
+            #  3. Accumulate average loss and total accuracy for both sets.
+            #     The train/valid_res variables should hold the average loss
+            #     and accuracy per epoch.
+            #  4. Don't forget to add a regularization term to the loss,
+            #     using the weight_decay parameter.
+
+            # ====== YOUR CODE: ======
             train_b_counter, val_b_counter = 0, 0
 
             total_correct = 0
@@ -129,22 +142,6 @@ class LinearClassifier(object):
 
             valid_res.accuracy.append(total_correct / val_b_counter)
             valid_res.loss.append(average_loss / val_b_counter)
-
-
-
-            # TODO:
-            #  Implement model training loop.
-            #  1. At each epoch, evaluate the model on the entire training set
-            #     (batch by batch) and update the weights.
-            #  2. Each epoch, also evaluate on the validation set.
-            #  3. Accumulate average loss and total accuracy for both sets.
-            #     The train/valid_res variables should hold the average loss
-            #     and accuracy per epoch.
-            #  4. Don't forget to add a regularization term to the loss,
-            #     using the weight_decay parameter.
-
-            # ====== YOUR CODE: ======
-            
             # ========================
             print(".", end="")
 
