@@ -54,8 +54,8 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
         m, n = X.shape
         actual_lambda = m*self.reg_lambda*np.eye(n)
         actual_lambda[0,0] = 0
-        
-        w_opt = (np.linalg.inv((X.T @ X) + actual_lambda)) @ (X.T @ y) 
+
+        w_opt = (np.linalg.inv((X.T @ X) + actual_lambda)) @ (X.T @ y)
 
         # ========================
 
@@ -149,12 +149,12 @@ class BostonFeaturesTransformer(BaseEstimator, TransformerMixin):
 
         X_transformed = None
         # ====== YOUR CODE: ======
-        
+
         X_transformed = np.delete(X,3,1)
         X_transformed = np.delete(X,7,1)
 
         X_transformed = self.cust_features.fit_transform(X_transformed)
-        
+
         # ========================
 
         return X_transformed
@@ -177,7 +177,7 @@ def top_correlated_features(df: DataFrame, target_feature, n=5):
 
     # TODO: Calculate correlations with target and sort features by it
     y = df[target_feature]
-    top_n_corr = np.array([])    
+    top_n_corr = np.array([])
     # ====== YOUR CODE: ======
     for i in df.columns[:-1]:
         sig_xy = (df[i]-df[i].mean()).multiply(np.array(y-y.mean())).sum()
@@ -250,9 +250,12 @@ def cv_best_hyperparams(
     #  - You can use MSE or R^2 as a score.
 
     # ====== YOUR CODE: ======
-   
+    cv = sklearn.model_selection.KFold(n_splits=k_folds, shuffle=True)
+    print(model.get_params().keys())
+    
+    search = sklearn.model_selection.GridSearchCV(estimator=model, param_grid={'linearregressor__reg_lambda': lambda_range,'bostonfeaturestransformer__degree': degree_range }, scoring='neg_mean_squared_error', cv=cv)
+    result = search.fit(X, y)
+    best_params = result.best_params_
     # ========================
 
     return best_params
-
-
