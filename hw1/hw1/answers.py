@@ -86,15 +86,27 @@ learn the matrix W with given epochs.
 # Part 4 answers
 
 part4_q1 = r"""
-**Your answer:**
+Idealy the residual plot should have a fairly random pattern around the horizontal axis (close to 0).
+
+The final plot after the CV is fit better than the plot for the top 5-features because it appears that there is a greater amount of residuals closer to to the horizontal axis.
 """
 
 part4_q2 = r"""
-**Your answer:**
+1. Yes. Adding non-linear features still keeps a linear regression model linear as the learn weight matrix W is still doing a linear transformtion to the input data. We do note that the dimensional space will be higher given non-linear for the input features.
+2. Yes. We can fit a non-linear function to the original features, taking them into a higher dimention and then apply a linear regression model (in a higher space then the original input space).
+3. Imagine a linear classification model. As we saw in Part 3, the parameters $\mat{W}$ of such a model define a hyperplane representing the decision boundary. How would adding non-linear features affect the decision boundary of such a classifier? Would it still be a hyperplane? Why or why not?
+The decision boundry of such a hyperplane would grow as we increased the working dimitional space, it would still be  a hyperplane,
+as a linear classifier always builds a hyperplane attepmting to seperate the diffrent classes from on another. The hyper itself would lie in a higher space.
 """
 
 part4_q3 = r"""
-**Your answer:**
-"""
+1. We use np.logspace beacuse it leads to a higher range of different variables to attempt.
+2. Total amount of times the model was fitted to data: degree_range * lambda_range * k_fold
 
+Our Model:
+degree_range: 3
+lambda_range: 20
+k_fold: 3
+= 3 * 20 * 3 = 180 
+"""
 # ==============
