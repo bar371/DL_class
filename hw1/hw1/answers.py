@@ -32,20 +32,17 @@ of lambda on the validation set.:**
 # ==============
 # Part 2 answers
 
-part2_q1 = r""" 
-Yes. A higher K would lead to improved generalization for unseen data.   
-Up to the point of including all the training samples. While this would be a very generalized predictor, 
-it would also have a very high bias as instead of fitting the test sample to it's neighbors it matches it to the whole 
-dataset.   
-"""
+part2_q1 = r"""It depends to what point. with lower K's , A higher K would lead to improved generalization for unseen 
+data as it takes into account more samples to vote from. However, this is true ip to the point of including the 
+number of samples from the most frequent class of the training samples. This would be lead to very poor generalization  
+as it will always predict the majority class from the training data, which would likely lead to bad accuracy. """
 
-part2_q2 = r"""
-1. In terms of the train-set accuracy --- by doing cross validation we actually introduce or model to more variances of data, 
-allowing it to generalize better as we chose the best mean accuracy between the folds. 
+part2_q2 = r"""1. In terms of the train-set accuracy --- by doing cross validation we actually introduce or model to 
+more variances of data, allowing it to generalize better as we chose the best mean accuracy between the folds. 
 
 2. In terms of the test-set accuracy --- using cross-validation allows you to find the best hyper-params (k in our case) 
 without overfitting the testset. This way we are able to see which k optimizes our validation set, 
-and apply it on the test set. Thus we grantee that the test-set was not contaimed and our results are accurate.
+and apply it on the test set. Thus we grantee that the test-set was not contaminated and our results are accurate.
 """
 
 # ==============
@@ -54,15 +51,33 @@ and apply it on the test set. Thus we grantee that the test-set was not contaime
 # Part 3 answers
 
 part3_q1 = r"""
-**Your answer:**
+** The Delta Hyper-Param allows for some margin of error between the score of the predicted class and the actual class.
+However, thanks to the regularization term that penalizes large weights even if we will choose a higher margin, 
+the SVM model will still attempt to find a matrix W that minimizes the loss, making the Delta param arbitrary. :**
 """
 
 part3_q2 = r"""
-**Your answer:**
+** 1. The linear model learns a weight Matrix W that represent the distribution of each number class, by applying
+ W to X (input image) so the pixels that 'agree' with W will get a high value. This is represented by the x_score,
+ the highest scoring class index will be chosen as the predicted class. Following this, you can see that
+  the mistakes the model has made were on numbers close enough in shape to the predicted class rather the then actual
+  label. 
+  2. A KNN model will look-up the closest resembling images and that the k-majority vote from them. Doing so 
+  does not learn a representation of the distribution for each label from the data like linear regression,
+  in that regard it is different. However in terms of similarity we would imaging that images the linear regression
+   was mistaken on will also be challenging for the KNN classifier --- 
+   as these images will have similar shapes but different classes. **
 """
 
 part3_q3 = r"""
-**Your answer:**
+** 1. The learning rate we chose based on the graph result is too high, evidence of this is the 'dip' in accuracy or spike 
+in loss during ~epoch 16 while still reaching high over-all accuracy/low bias. A Good Graph will achieve same or better
+accuracy with no such 'dips'. A too-low learning rate will be sub-par in accuracy results as it took too long to 
+learn the matrix W with given epochs.
+
+2. The model is slightly(+) over-fitted to the training set, the difference between it (~94% accuracy) and the test-set 
+ accuracy (~85% accuracy) is non-trivial. The reason for the overfitting is a high learning rate with limited regularization,
+ A possible solution would be a lower learning rate with more training epochs and increased regularization. :**
 """
 
 # ==============
