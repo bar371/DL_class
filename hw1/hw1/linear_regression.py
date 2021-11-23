@@ -150,8 +150,7 @@ class BostonFeaturesTransformer(BaseEstimator, TransformerMixin):
         X_transformed = None
         # ====== YOUR CODE: ======
 
-        X_transformed = np.delete(X, 3, 1)
-        X_transformed = np.delete(X, 7, 1)
+        X_transformed = np.delete(X, [3,7], 1)
 
         X_transformed = self.cust_features.fit_transform(X_transformed)
 
