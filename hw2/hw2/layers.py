@@ -82,7 +82,8 @@ class LeakyReLU(Layer):
 
         # TODO: Implement the LeakyReLU operation.
         # ====== YOUR CODE: ======
-
+        import numpy as np
+        out = torch.max(self.alpha * x, x)
         # ========================
 
         self.grad_cache["x"] = x
@@ -97,9 +98,10 @@ class LeakyReLU(Layer):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-
+        dx = torch.empty(x.shape)
+        dx[x >= 0] = dout[x >= 0]
+        dx[x < 0] = dout[x < 0] * self.alpha
         # ========================
-
         return dx
 
     def params(self):
@@ -116,6 +118,7 @@ class ReLU(LeakyReLU):
 
     def __init__(self):
         # ====== YOUR CODE: ======
+        super().__init__(alpha=0)
 
         # ========================
 
@@ -143,6 +146,8 @@ class Sigmoid(Layer):
         #  Save whatever you need into grad_cache.
         #tip: store the output in self.grad_cache["sigmoid"] 
         # ====== YOUR CODE: ======
+        out = 1 / (1 + torch.exp(-x))
+        self.grad_cache['sigmoid'] = out
 
         # ========================
 
@@ -156,8 +161,10 @@ class Sigmoid(Layer):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-
+        sig = self.grad_cache['sigmoid']
+        dx = dout * (sig) * (1 - sig)
         # ========================
+
 
         return dx
 
@@ -184,7 +191,14 @@ class TanH(Layer):
         # TODO: Implement the tanh function.
         #  Save whatever you need into grad_cache.
         # ====== YOUR CODE: ======
+        pos_exp = torch.exp(x)
+        neg_exp = torch.exp(-x)
+        top = pos_exp - neg_exp
+        bottom = pos_exp + neg_exp
 
+        out = (top) / (bottom)
+        self.grad_cache['tanh_top'] = top ** 2
+        self.grad_cache['tanh_bottom'] = bottom ** 2
         # ========================
 
         return out
@@ -197,7 +211,7 @@ class TanH(Layer):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-
+        dx = dout * (1 - (self.grad_cache['tanh_top']) / self.grad_cache['tanh_bottom'])
         # ========================
 
         return dx
@@ -226,7 +240,8 @@ class Linear(Layer):
         # deviation of `wstd`. Init bias to zero.
         #tip: use torch.randn
         # ====== YOUR CODE: ======
-
+        self.w = torch.empty(out_features,in_features).normal_(mean=0 , std=wstd)
+        self.b = torch.zeros(out_features)
         # ========================
 
         # These will store the gradients
@@ -246,7 +261,7 @@ class Linear(Layer):
 
         # TODO: Compute the affine transform
         # ====== YOUR CODE: ======
-
+        out = x @ self.w.T + self.b
         # ========================
 
         self.grad_cache["x"] = x
@@ -265,9 +280,10 @@ class Linear(Layer):
         #   - db, the gradient of the loss with respect to b
         #  Note: You should ACCUMULATE gradients in dw and db.
         # ====== YOUR CODE: ======
-
+        dx = dout @ self.w
+        self.dw += dout.T @ x
+        self.db += torch.sum(dout, dim=0)
         # ========================
-
         return dx
 
     def __repr__(self):
@@ -303,10 +319,13 @@ class CrossEntropyLoss(Layer):
         xmax, _ = torch.max(x, dim=1, keepdim=True)
         x = x - xmax
 
+
         # TODO: Compute the cross entropy loss using the last formula from the
         #  notebook (i.e. directly using the class scores).
         # ====== YOUR CODE: ======
-
+        correct_scores = -1 * x[torch.arange(N),y]
+        log_exp_scores = torch.log(torch.sum(torch.exp(x),dim=1))
+        loss = torch.mean(correct_scores + log_exp_scores)
         # ========================
 
         self.grad_cache["x"] = x
@@ -325,7 +344,14 @@ class CrossEntropyLoss(Layer):
 
         # TODO: Calculate the gradient w.r.t. the input x.
         # ====== YOUR CODE: ======
-
+        # derivative of -xy is -1 where y==chosen class, otherwise zero
+        dxy = torch.zeros(x.shape)
+        dxy[torch.arange(N), y] = -1
+        x_exps = torch.exp(x) # inner_derivative
+        log_derivative = 1 / (torch.sum(x_exps,dim=1)) # log derivative
+        dxlog = x_exps.T * log_derivative # final log derivative
+        dx = dxy + dxlog.T
+        dx = (dx * dout) / N
         # ========================
 
         return dx
@@ -349,7 +375,7 @@ class Dropout(Layer):
         #  Notice that contrary to previous layers, this layer behaves
         #  differently a according to the current training_mode (train/test).
         # ====== YOUR CODE: ======
-
+        out = None
         # ========================
 
         return out
@@ -359,7 +385,7 @@ class Dropout(Layer):
         # ====== YOUR CODE: ======
 
         # ========================
-
+        dx = None
         return dx
 
     def params(self):
@@ -384,7 +410,10 @@ class Sequential(Layer):
         # TODO: Implement the forward pass by passing each layer's output
         #  as the input of the next.
         # ====== YOUR CODE: ======
+        for i in range(len(self.layers)):
+            x = self.layers[i].forward(x, **kw)
 
+        out = x
         # ========================
 
         return out
@@ -396,9 +425,11 @@ class Sequential(Layer):
         #  Each layer's input gradient should be the previous layer's output
         #  gradient. Behold the backpropagation algorithm in action!
         # ====== YOUR CODE: ======
-
+        for i in range(1,len(self.layers)):
+            dout = self.layers[-i].backward(dout) # from the end to the 1' indexed
+        din = self.layers[0].backward(dout) # the first layer
         # ========================
-
+        # din = dout
         return din
 
     def params(self):
@@ -470,7 +501,14 @@ class MLP(Layer):
             
         # TODO: Build the MLP architecture as described.
         # ====== YOUR CODE: ======
-        
+        layers.append(Linear(in_features, hidden_features[0]))
+        layers.append(activation_cls())
+
+        for h in range(1,len(hidden_features)):
+            print(h-1,h)
+            layers.append(Linear(hidden_features[h-1],hidden_features[h]))
+            layers.append(activation_cls())
+        layers.append(Linear(hidden_features[-1],num_classes))
         # ========================
 
         self.sequence = Sequential(*layers)
