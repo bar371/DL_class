@@ -505,7 +505,6 @@ class MLP(Layer):
         layers.append(activation_cls())
 
         for h in range(1,len(hidden_features)):
-            print(h-1,h)
             layers.append(Linear(hidden_features[h-1],hidden_features[h]))
             layers.append(activation_cls())
         layers.append(Linear(hidden_features[-1],num_classes))

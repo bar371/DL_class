@@ -201,13 +201,25 @@ class LayerTrainer(Trainer):
         #    not a tensor) as num_correct.
         # ====== YOUR CODE: ======
         # Forward pass
+        x_scores = self.model(X.view(X.shape[0],-1))
+        loss = self.loss_fn(x_scores,y)
+        print('****************************')
+        print(loss)
+        print('****************************')
+
+        loss_d = self.loss_fn.backward()
+        # self.optimizer.zero_grad()
 
         # Backward pass
-
+        self.model.backward(loss_d.T)
         # Optimizer step
+        self.optimizer.step()
+        self.optimizer.zero_grad()
 
         # Calculate accuracy
-        
+        preds = torch.argmax(x_scores, dim=1)
+        num_correct = int((len(preds[preds == y] == True)))
+        # num_correct = 100
         # ========================
 
         return BatchResult(loss, num_correct)
@@ -218,9 +230,11 @@ class LayerTrainer(Trainer):
         # TODO: Evaluate the Layer model on one batch of data.
         # ====== YOUR CODE: ======
         # Forward pass
-
-        # Calculate accuracy
-        
+        # preds = self.model.forward(X)
+        #
+        # # Calculate accuracy
+        # loss = self.loss_fn(y, preds)
+        # num_correct = len(preds[preds == y] == True)
         # ========================
 
         return BatchResult(loss, num_correct)
@@ -243,14 +257,16 @@ class TorchTrainer(Trainer):
         #  - Calculate number of correct predictions
         #tip: use loss = loss.item() in the end
         # ====== YOUR CODE: ======
-        # Forward pass
-
-        # Backward pass
-
-        # Optimizer step
-
-        # Calculate accuracy
-        
+        # # Forward pass
+        # preds = self.model.forward(X)
+        # # Backward pass
+        # self.model.backward(X)
+        # # Optimizer step
+        # self.optimizer.step()
+        # # Calculate accuracy
+        # loss = self.loss_fn(preds, y)
+        # num_correct = len(preds[preds == y] == True)
+        sefsef
         # ========================
 
         return BatchResult(loss, num_correct)
@@ -267,9 +283,9 @@ class TorchTrainer(Trainer):
             #  - Calculate number of correct predictions
             # ====== YOUR CODE: ======
             # Forward pass
-
+            pass
             # Calculate accuracy
-
+            pass
             # ========================
 
         return BatchResult(loss, num_correct)
