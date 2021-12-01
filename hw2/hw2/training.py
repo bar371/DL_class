@@ -80,7 +80,28 @@ class Trainer(abc.ABC):
             #    save the model to the file specified by the checkpoints
             #    argument.
             # ====== YOUR CODE: ======
+            eps = 2e-10
+            train_epoch_loss, train_epoch_acc = self.train_epoch(dl_train=dl_train,verbose=verbose)
+            train_loss += [train_epoch_loss]
+            train_acc += [train_epoch_acc]
+            test_epoch_loss, test_epoch_acc = self.test_epoch(dl_test=dl_test, verbose=verbose)
+            test_loss += [test_epoch_loss]
+            test_acc += [test_acc]
 
+            if actual_num_epochs > 2 and (test_epoch_loss[epoch] - test_epoch_loss[epoch-1]) < eps:
+                # no improvement this epoch
+                epochs_without_improvement += 1
+                best_acc = max(best_acc, train_epoch_acc) if best_acc else train_epoch_acc
+            elif checkpoints:
+                # improvement to test loss, save model
+                torch.save(self.model,'best_model.pkl')
+                epochs_without_improvement = 0
+
+            if epochs_without_improvement == early_stopping:
+                # reached number of epoch to early stopping, breaking...
+                break
+
+            actual_num_epochs += 1
             # ========================
 
         return FitResult(actual_num_epochs, train_loss, train_acc, test_loss, test_acc)
@@ -201,25 +222,17 @@ class LayerTrainer(Trainer):
         #    not a tensor) as num_correct.
         # ====== YOUR CODE: ======
         # Forward pass
+        self.optimizer.zero_grad()
         x_scores = self.model(X.view(X.shape[0],-1))
         loss = self.loss_fn(x_scores,y)
-        print('****************************')
-        print(loss)
-        print('****************************')
-
         loss_d = self.loss_fn.backward()
-        # self.optimizer.zero_grad()
-
         # Backward pass
-        self.model.backward(loss_d.T)
+        self.model.backward(loss_d)
         # Optimizer step
         self.optimizer.step()
-        self.optimizer.zero_grad()
-
         # Calculate accuracy
         preds = torch.argmax(x_scores, dim=1)
         num_correct = int((len(preds[preds == y] == True)))
-        # num_correct = 100
         # ========================
 
         return BatchResult(loss, num_correct)
@@ -230,11 +243,11 @@ class LayerTrainer(Trainer):
         # TODO: Evaluate the Layer model on one batch of data.
         # ====== YOUR CODE: ======
         # Forward pass
-        # preds = self.model.forward(X)
-        #
+        x_scores = self.model(X.view(X.shape[0],-1))
         # # Calculate accuracy
-        # loss = self.loss_fn(y, preds)
-        # num_correct = len(preds[preds == y] == True)
+        loss = self.loss_fn(x_scores,y)
+        preds = torch.argmax(x_scores, dim=1)
+        num_correct = len(preds[preds == y] == True)
         # ========================
 
         return BatchResult(loss, num_correct)
@@ -266,7 +279,8 @@ class TorchTrainer(Trainer):
         # # Calculate accuracy
         # loss = self.loss_fn(preds, y)
         # num_correct = len(preds[preds == y] == True)
-        sefsef
+        pass
+        loss , num_correct = 0,0
         # ========================
 
         return BatchResult(loss, num_correct)
@@ -286,6 +300,7 @@ class TorchTrainer(Trainer):
             pass
             # Calculate accuracy
             pass
+            loss, num_correct = 0,0
             # ========================
 
         return BatchResult(loss, num_correct)

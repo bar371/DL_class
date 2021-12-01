@@ -89,9 +89,10 @@ class MomentumSGD(Optimizer):
         self.learn_rate = learn_rate
         self.reg = reg
         self.momentum = momentum
-
         # TODO: Add your own initializations as needed.
         # ====== YOUR CODE: ======
+        self.momentums = []
+        self.t = 0
 
         # ========================
 
@@ -104,7 +105,16 @@ class MomentumSGD(Optimizer):
             # update the parameters tensor based on the velocity. Don't forget
             # to include the regularization term.
             # ====== YOUR CODE: ======
+            dp += p * self.reg # adding reg
+            grad_step = -self.learn_rate * dp
+            if self.t == 0:
+                v_t_1 = grad_step
+            else:
+                v_t_1 = self.momentum * self.momentums[self.t] + grad_step
 
+            self.momentums.append(v_t_1)
+            self.t += 1
+            p += v_t_1
             # ========================
 
 
