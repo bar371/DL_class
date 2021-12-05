@@ -344,12 +344,12 @@ class CrossEntropyLoss(Layer):
 
         # TODO: Calculate the gradient w.r.t. the input x.
         # ====== YOUR CODE: ======
-        # derivative of -xy is -1 where y==chosen class, otherwise zero
+        # div of -xy is -1 with y==chosen class, else zero
         dxy = torch.zeros(x.shape)
         dxy[torch.arange(N), y] = -1
-        x_exps = torch.exp(x) # inner_derivative
-        log_derivative = 1 / (torch.sum(x_exps,dim=1)) # log derivative
-        dxlog = x_exps.T * log_derivative # final log derivative
+        x_exps = torch.exp(x) # inner div
+        log_derivative = 1 / (torch.sum(x_exps,dim=1)) # log div
+        dxlog = x_exps.T * log_derivative # final log div
         dx = dxy + dxlog.T
         dx = (dx * dout) / N
         # ========================
@@ -426,8 +426,8 @@ class Sequential(Layer):
         #  gradient. Behold the backpropagation algorithm in action!
         # ====== YOUR CODE: ======
         for i in range(1,len(self.layers)):
-            dout = self.layers[-i].backward(dout) # from the end to the 1' indexed
-        din = self.layers[0].backward(dout) # the first layer
+            dout = self.layers[-i].backward(dout) # from end to 1
+        din = self.layers[0].backward(dout) # adding first layer
         # ========================
         # din = dout
         return din
@@ -502,12 +502,16 @@ class MLP(Layer):
             
         # TODO: Build the MLP architecture as described.
         # ====== YOUR CODE: ======
+        #first layer
         layers.append(Linear(in_features, hidden_features[0]))
-        layers.append(activation_cls())
+        layers.append(activation_cls()) # activation of first
 
         for h in range(1,len(hidden_features)):
+            #hidden layers
             layers.append(Linear(hidden_features[h-1],hidden_features[h]))
             layers.append(activation_cls())
+
+        # final hidden and output
         layers.append(Linear(hidden_features[-1],num_classes))
         # ========================
 

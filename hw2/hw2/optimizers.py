@@ -72,7 +72,7 @@ class VanillaSGD(Optimizer):
             #  Update the gradient according to regularization and then
             #  update the parameters tensor.
             # ====== YOUR CODE: ======
-            dp += self.reg * p # this is the derivite of the reg update to the grad
+            dp += self.reg * p # div of reg for grad update
             p -= self.learn_rate * dp
             # ========================
 
@@ -105,15 +105,15 @@ class MomentumSGD(Optimizer):
             # update the parameters tensor based on the velocity. Don't forget
             # to include the regularization term.
             # ====== YOUR CODE: ======
-            dp += p * self.reg # adding reg
+            dp += p * self.reg # including reg
             grad_step = -self.learn_rate * dp
             if self.t == 0:
                 v_t_1 = grad_step
             else:
                 v_t_1 = self.momentum * self.momentums[self.t] + grad_step
+                self.t += 1
 
             self.momentums.append(v_t_1)
-            self.t += 1
             p += v_t_1
             # ========================
 
