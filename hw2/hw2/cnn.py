@@ -77,7 +77,16 @@ class ConvClassifier(nn.Module):
         #  Note: If N is not divisible by P, then N mod P additional
         #  CONV->ACTs should exist at the end, without a POOL after them.
         # ====== YOUR CODE: ======
-
+        blocks = (len(self.channels)//self.pool_every) + (len(self.channels) % self.pool_every)
+        activation = ACTIVATIONS[self.activation_type]
+        pooling = POOLINGS[self.pooling_type]
+        
+        for i in range(len(self.channels)):
+            layers.append(nn.Conv2d(in_channels,len(self.channels),*self.conv_params.values()))
+            layers.append(activation(*self.activation_params.values()))
+            
+            if i != blocks-1:
+                layers.append(nn.MaxPool2d(*self.pooling_params.values()))
         # ========================
         seq = nn.Sequential(*layers)
         return seq
@@ -91,7 +100,8 @@ class ConvClassifier(nn.Module):
         rng_state = torch.get_rng_state()
         try:
             # ====== YOUR CODE: ======
-
+            in_channels, in_h, in_w, = tuple(self.in_size)
+             
             # ========================
         finally:
             torch.set_rng_state(rng_state)
@@ -106,7 +116,12 @@ class ConvClassifier(nn.Module):
         #  (FC -> ACT)*M -> Linear
         #  The last Linear layer should have an output dim of out_classes.
         # ====== YOUR CODE: ======
-
+        activation = ACTIVATIONS[self.activation_type]
+        
+        for i in range(len(self.hidden_dims)):
+            layers.append(nn.Linear(n_features,len(self.hidden_dims)))
+            layers.append(activation(*self.activation_params.values()))
+        layers.append(nn.Linear(n_features,self.out_classes))
         # ========================
 
         seq = nn.Sequential(*layers)
@@ -117,7 +132,8 @@ class ConvClassifier(nn.Module):
         #  Extract features from the input, run the classifier on them and
         #  return class scores.
         # ====== YOUR CODE: ======
-
+        input_features = self.feature_extractor(x)
+        out = self.classifier(input_features)
         # ========================
         return out
 
@@ -278,3 +294,4 @@ class YourCodeNet(ConvClassifier):
     # ====== YOUR CODE: ======
 
     # ========================
+
