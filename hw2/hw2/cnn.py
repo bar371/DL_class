@@ -207,6 +207,35 @@ class ResidualBlock(nn.Module):
         #  - Don't create layers which you don't use! This will prevent
         #    correct comparison in the test.
         # ====== YOUR CODE: ======
+        main_path = []
+        comb_channels = [in_channels, *channels]
+        activation = ACTIVATIONS[activation_type]
+        for i in range(1,len(comb_channels)):
+            main_path.append(nn.Conv2d(in_channels=comb_channels[i-1],
+                                      out_channels=comb_channels[i],
+                                      kernel_size=kernel_sizes[i-1],
+                                      bias=True,
+                                      padding=int((kernel_sizes[i-1] - 1) / 2),
+                                      )
+                            )
+            if i < len(comb_channels)-1:
+                if dropout > 0:
+                    main_path.append(nn.Dropout2d())
+                if batchnorm:
+                    main_path.append(nn.BatchNorm2d(comb_channels[i]))
+                main_path.append(activation(*activation_params))
+
+        self.main_path = nn.Sequential(*main_path)
+        short_cut = nn.Conv2d(in_channels=comb_channels[0],
+                               out_channels=comb_channels[-1],
+                               kernel_size=1,
+                               bias=False
+                              )
+        self.shortcut_path = nn.Sequential(short_cut)
+
+        
+        
+
 
         # ========================
 
