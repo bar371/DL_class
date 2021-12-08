@@ -215,27 +215,27 @@ class ResidualBlock(nn.Module):
                                       out_channels=comb_channels[i],
                                       kernel_size=kernel_sizes[i-1],
                                       bias=True,
-                                      padding=int((kernel_sizes[i-1] - 1) / 2),
+                                      padding=int((kernel_sizes[i-1] - 1) // 2),
                                       )
                             )
             if i < len(comb_channels)-1:
                 if dropout > 0:
-                    main_path.append(nn.Dropout2d())
+                    main_path.append(nn.Dropout2d(dropout))
                 if batchnorm:
                     main_path.append(nn.BatchNorm2d(comb_channels[i]))
-                main_path.append(activation(*activation_params))
+                main_path.append(activation(**activation_params))
 
         self.main_path = nn.Sequential(*main_path)
-        short_cut = nn.Conv2d(in_channels=comb_channels[0],
-                               out_channels=comb_channels[-1],
-                               kernel_size=1,
-                               bias=False
-                              )
-        self.shortcut_path = nn.Sequential(short_cut)
+        if channels[-1] == in_channels:
+            self.shortcut_path = nn.Identity()
 
-        
-        
-
+        else:
+            self.shortcut_path = nn.Sequential(nn.Conv2d(
+                in_channels=comb_channels[0],
+                out_channels=comb_channels[-1],
+                kernel_size=1,
+                bias=False
+            ))
 
         # ========================
 
@@ -271,6 +271,15 @@ class ResidualBottleneckBlock(ResidualBlock):
         :param kwargs: Any additional arguments supported by ResidualBlock.
         """
         # ====== YOUR CODE: ======
+        channels = [inner_channels[0], *inner_channels, in_out_channels]
+        kernals = [1, *inner_kernel_sizes, 1]
+        super().__init__(
+                in_channels= in_out_channels,
+                channels= channels,
+                kernel_sizes = kernals,
+                **kwargs,
+        )
+
 
         # ========================
 
