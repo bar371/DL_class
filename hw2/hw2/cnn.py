@@ -322,19 +322,21 @@ class ResNetClassifier(ConvClassifier):
         # ====== YOUR CODE: ======
         # Loop over groups of P output channels and create a block from them.
         comb_channels = [in_channels, *self.channels]
-        blocks = (len(self.channels)//self.pool_every) + (len(self.channels) % self.pool_every)
-        
-        kernel_size = self.conv_params.get('kernel_size')
-
-        for block in range(blocks):
-            for i in range(1, len(comb_channels), self.pool_every):
-                layers.append(ResidualBlock(comb_channels[i-1], comb_channels[i:i + self.pool_every+1],
-                                        kernel_sizes=[kernel_size] * len(comb_channels[i:i + self.pool_every+1]),
-                                        batchnorm=self.batchnorm, dropout=self.dropout,
-                                        activation_type=self.activation_type, activation_params=self.activation_params))
-            # the instruction say not to take it, but the tests wont work without it
-            # if block != blocks-1:
-            layers.append(pooling(*self.pooling_params.values()))
+        pooling = POOLINGS[self.pooling_type]
+        kernel_size = (3)
+        print(kernel_size)
+        for i in range(1,len(comb_channels),self.pool_every):
+            layers.append(ResidualBlock(
+                                    in_channels=comb_channels[i-1],
+                                    channels=comb_channels[i:i + self.pool_every],
+                                    kernel_sizes=[kernel_size] * len(comb_channels[i:i + self.pool_every]),
+                                    batchnorm=self.batchnorm,
+                                    dropout=self.dropout,
+                                    activation_type=self.activation_type,
+                                    activation_params=self.activation_params,
+                                    ))
+            if i < len(comb_channels)-2:
+                layers.append(pooling(**self.pooling_params))
         # ========================
         seq = nn.Sequential(*layers)
         return seq
