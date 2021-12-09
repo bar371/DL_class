@@ -39,6 +39,12 @@ def run_experiment(
     layers_per_block=2,
     pool_every=2,
     hidden_dims=[1024],
+    kernel_size = 3,
+    stride = 1,
+    padding = 1,
+    pooling_size = 2,
+    pooling_type='avg',
+    activation_type='lrelu',
     model_type="cnn",
     # You can add extra configuration for your experiments here
     **kw,
@@ -78,9 +84,32 @@ def run_experiment(
     fit_res = None
     # ====== YOUR CODE: ======
     # Data - use DataLoader
-    
+    df_train = DataLoader(ds_train, batch_size=batches)
+    df_test = DataLoader(ds_test, batch_size=batches)
+    CIFAR_10_classes = 10
     # Create model, loss and optimizer instances
-    
+    channels = []
+    for _ in range(layers_per_block):
+        for channel in filters_per_layer:
+            channels.append(channel)
+    in_channels = ds_train[0][0].shape
+
+    model = model_cls(
+        in_channels,
+        CIFAR_10_classes,
+        channels= channels,
+        pool_every= pool_every,
+        hidden_dims= hidden_dims,
+        conv_params = {'kernal_size': kernel_size, 'stride':stride, 'padding':padding},
+        activation_type= activation_type,
+        activation_params= {'negeative_slope':0.01},
+        pooling_type= pooling_type,
+        pooling_params={'kernal_sizen':2},
+    )
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=reg)
+    loss_function = torch.nn.CrossEntropyLoss()
+    exp_trainer = training.TorchTrainer(model, loss_fn=loss_function, optimizer=optimizer, device=device)
+    fit_res = exp_trainer.fit(dl_train=df_train, dl_test=df_test, num_epochs=epochs, checkpoints=checkpoints , early_stopping=early_stopping, **kw)
     # ========================
 
     save_experiment(run_name, out_dir, cfg, fit_res)
