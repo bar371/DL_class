@@ -302,7 +302,7 @@ class TorchTrainer(Trainer):
             loss, num_correct = 0,0
 
             # Forward pass
-            x_scores = self.model(X.view(X.shape[0], -1))
+            x_scores = self.model(X)
             # # Calculate accuracy
             loss = self.loss_fn(x_scores, y)
             preds = torch.argmax(x_scores, dim=1)
