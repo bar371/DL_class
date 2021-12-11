@@ -20,9 +20,9 @@ def part2_overfit_hp():
     wstd, lr, reg = 0, 0, 0
     # TODO: Tweak the hyperparameters until you overfit the small dataset.
     # ====== YOUR CODE: ======
-    wstd = 0.001
+    wstd = 0.01
     lr = 0.01
-    reg = 0.001
+    reg = 0.01
     # ========================
     return dict(wstd=wstd, lr=lr, reg=reg)
 
@@ -33,11 +33,11 @@ def part2_optim_hp():
     # TODO: Tweak the hyperparameters to get the best results you can.
     # You may want to use different learning rates for each optimizer.
     # ====== YOUR CODE: ======
-    wstd = 0.01
-    lr_vanilla = 0.1
+    wstd = 0.1
+    lr_vanilla = 0.01
     lr_momentum = 0.01
     lr_rmsprop = 0.01
-    reg = 0.001
+    reg = 0.01
     # ========================
     return dict(
         wstd=wstd,

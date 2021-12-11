@@ -84,8 +84,8 @@ def run_experiment(
     fit_res = None
     # ====== YOUR CODE: ======
     # Data - use DataLoader
-    df_train = DataLoader(ds_train, batch_size=batches)
-    df_test = DataLoader(ds_test, batch_size=batches)
+    df_train = DataLoader(ds_train, batch_size=batches,drop_last=True)
+    df_test = DataLoader(ds_test, batch_size=batches, drop_last=True)
     CIFAR_10_classes = 10
     # Create model, loss and optimizer instances
     channels = []
@@ -100,7 +100,7 @@ def run_experiment(
         channels= channels,
         pool_every= pool_every,
         hidden_dims= hidden_dims,
-        conv_params = {'kernal_size': kernel_size, 'stride':stride, 'padding':padding},
+        conv_params = {'stride':stride, 'padding':padding},
         activation_type= activation_type,
         activation_params= {'negeative_slope':0.01},
         pooling_type= pooling_type,
@@ -109,7 +109,7 @@ def run_experiment(
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=reg)
     loss_function = torch.nn.CrossEntropyLoss()
     exp_trainer = training.TorchTrainer(model, loss_fn=loss_function, optimizer=optimizer, device=device)
-    fit_res = exp_trainer.fit(dl_train=df_train, dl_test=df_test, num_epochs=epochs, checkpoints=checkpoints , early_stopping=early_stopping)
+    fit_res = exp_trainer.fit(dl_train=df_train, dl_test=df_test, num_epochs=epochs, checkpoints=checkpoints , early_stopping=early_stopping, **kw)
     # ========================
 
     save_experiment(run_name, out_dir, cfg, fit_res)
