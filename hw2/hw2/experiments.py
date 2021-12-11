@@ -104,15 +104,16 @@ def run_experiment(
         activation_type= activation_type,
         activation_params= {'negeative_slope':0.01},
         pooling_type= pooling_type,
-        pooling_params={'kernal_sizen':2},
+        pooling_params={'kernel_size':2},
     )
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=reg)
     loss_function = torch.nn.CrossEntropyLoss()
     exp_trainer = training.TorchTrainer(model, loss_fn=loss_function, optimizer=optimizer, device=device)
-    fit_res = exp_trainer.fit(dl_train=df_train, dl_test=df_test, num_epochs=epochs, checkpoints=checkpoints , early_stopping=early_stopping, **kw)
+    fit_res = exp_trainer.fit(dl_train=df_train, dl_test=df_test, num_epochs=epochs, checkpoints=checkpoints , early_stopping=early_stopping)
     # ========================
 
     save_experiment(run_name, out_dir, cfg, fit_res)
+    return fit_res, cfg
 
 
 def save_experiment(run_name, out_dir, cfg, fit_res):
@@ -133,7 +134,7 @@ def save_experiment(run_name, out_dir, cfg, fit_res):
 def load_experiment(filename):
     with open(filename, "r") as f:
         output = json.load(f)
-
+    print(output)
     config = output["config"]
     fit_res = FitResult(**output["results"])
 

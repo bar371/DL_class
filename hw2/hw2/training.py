@@ -81,27 +81,28 @@ class Trainer(abc.ABC):
             #    argument.
             # ====== YOUR CODE: ======
             eps = 2e-10
-            train_epoch_loss, train_epoch_acc = self.train_epoch(dl_train=dl_train,verbose=verbose)
-            train_loss += [train_epoch_loss]
-            train_acc += [train_epoch_acc]
-            test_epoch_loss, test_epoch_acc = self.test_epoch(dl_test=dl_test, verbose=verbose)
-            test_loss += [test_epoch_loss]
-            test_acc += [test_acc]
+            train_epoch_ret = self.train_epoch(dl_train=dl_train,verbose=verbose, **kw)
+            train_loss += train_epoch_ret.losses
+            train_acc.append(train_epoch_ret.accuracy)
+            test_epoch_ret = self.test_epoch(dl_test=dl_test, verbose=verbose, **kw)
+            test_loss += test_epoch_ret.losses
+            test_acc.append(test_epoch_ret.accuracy)
 
-            if actual_num_epochs > 2 and (test_epoch_loss[epoch] - test_epoch_loss[epoch-1]) < eps:
+            if actual_num_epochs > 2 and (test_loss[epoch] - test_loss[epoch-1]) < eps:
                 # no improvement this epoch
                 epochs_without_improvement += 1
-                best_acc = max(best_acc, train_epoch_acc) if best_acc else train_epoch_acc
+                best_acc = max(best_acc, test_acc[epoch]) if best_acc else test_acc[epoch]
+
             elif checkpoints:
                 # improvement to test loss, save model
-                torch.save(self.model,'best_model.pkl')
+                torch.save(self.model,checkpoints)
                 epochs_without_improvement = 0
 
-            if epochs_without_improvement == early_stopping:
+            if early_stopping and epochs_without_improvement == early_stopping:
                 # reached number of epoch to early stopping, breaking...
                 break
 
-            actual_num_epochs += 1
+            actual_num_epochs = epoch
             # ========================
 
         return FitResult(actual_num_epochs, train_loss, train_acc, test_loss, test_acc)
@@ -282,7 +283,7 @@ class TorchTrainer(Trainer):
         self.optimizer.step()
         # Calculate accuracy
         preds = torch.argmax(x_scores, dim=1)
-        num_correct = int((len(preds[preds == y] == True)))
+        num_correct = (preds == y).sum().item()
         loss = loss.item()
         # ========================
 
@@ -304,9 +305,9 @@ class TorchTrainer(Trainer):
             # Forward pass
             x_scores = self.model(X)
             # # Calculate accuracy
-            loss = self.loss_fn(x_scores, y)
+            loss = self.loss_fn(x_scores, y).item()
             preds = torch.argmax(x_scores, dim=1)
-            num_correct = len(preds[preds == y] == True)
+            num_correct = (preds == y).sum().item()
             # ========================
 
         return BatchResult(loss, num_correct)
