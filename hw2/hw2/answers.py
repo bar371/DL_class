@@ -9,7 +9,10 @@ math (delimited with $$).
 # Part 1 answers
 
 part1_q1 = r"""
-** **
+The jacobian is calculated by the partial derivatives of the output in respect to the input. 
+Input = (128,1024)
+Output = (128,2048)
+Therefor the shape of the Jacobian matrix would be (1024,2048)
 """
 
 # ==============
