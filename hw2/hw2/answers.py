@@ -104,8 +104,10 @@ Right Diagram (bottleneck block):
 FLOPs: 70,016 Parameters * (H*W)
 
 3. NEED TO ANSWER
-(1) spatially (within feature maps):  
-(2) across feature maps
+(1) spatially (within feature maps):  Within feature maps the ResBlock have a better ability to combine the input, as 
+they deal with no dimensional reduction as in the BottleNeck case, who forces the input and output features to be 1. 
+(2) across feature maps - the bottle neck dimensional reduction allows for better information transfer between feature
+maps, as the input is more compact. 
 
 """
 
