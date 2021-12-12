@@ -39,7 +39,7 @@ def run_experiment(
     layers_per_block=2,
     pool_every=2,
     hidden_dims=[1024],
-    kernel_size = 3,
+    pooling_kernel_size = 3,
     stride = 1,
     padding = 1,
     pooling_size = 2,
@@ -102,9 +102,9 @@ def run_experiment(
         hidden_dims= hidden_dims,
         conv_params = {'stride':stride, 'padding':padding},
         activation_type= activation_type,
-        activation_params= {'negeative_slope':0.01},
+        activation_params= {},
         pooling_type= pooling_type,
-        pooling_params={'kernel_size':2},
+        pooling_params={'kernel_size':pooling_kernel_size},
     )
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=reg)
     loss_function = torch.nn.CrossEntropyLoss()
