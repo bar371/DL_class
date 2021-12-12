@@ -85,8 +85,6 @@ class ConvClassifier(nn.Module):
             for i in range(1,self.pool_every+1):
                 layers.append(nn.Conv2d(channels[block*i+i-1],channels[block*i+i],*self.conv_params.values()))
                 layers.append(activation(*self.activation_params.values()))
-            # the instruction say not to take it, but the tests wont work without it
-            # if block != blocks-1:
             layers.append(pooling(*self.pooling_params.values()))
         # ========================
         seq = nn.Sequential(*layers)
@@ -124,16 +122,13 @@ class ConvClassifier(nn.Module):
         #  The last Linear layer should have an output dim of out_classes.
         # ====== YOUR CODE: ======
         activation = ACTIVATIONS[self.activation_type]
-        #First layer
         layers.append(nn.Linear(n_features, self.hidden_dims[0]))
         layers.append(activation(*self.activation_params.values()))
 
-        # hidden dims
         for i in range(1,len(self.hidden_dims)):
             layers.append(nn.Linear(self.hidden_dims[i-1],self.hidden_dims[i]))
             layers.append(activation(*self.activation_params.values()))
 
-        # final hidden to output
         layers.append(nn.Linear(self.hidden_dims[-1],self.out_classes))
         # ========================
 
@@ -145,8 +140,8 @@ class ConvClassifier(nn.Module):
         #  Extract features from the input, run the classifier on them and
         #  return class scores.
         # ====== YOUR CODE: ======
-        input_features = self.feature_extractor(x) # extract features
-        input_features = input_features.view(input_features.shape[0], -1) # change view to fit classfier
+        input_features = self.feature_extractor(x)
+        input_features = input_features.view(input_features.shape[0], -1)
         out = self.classifier(input_features)
         # ========================
         return out
@@ -320,11 +315,9 @@ class ResNetClassifier(ConvClassifier):
         #    without a POOL after them.
         #  - Use your own ResidualBlock implementation.
         # ====== YOUR CODE: ======
-        # Loop over groups of P output channels and create a block from them.
         comb_channels = [in_channels, *self.channels]
         pooling = POOLINGS[self.pooling_type]
         kernel_size = (3)
-        print(kernel_size)
         for i in range(1,len(comb_channels),self.pool_every):
             layers.append(ResidualBlock(
                                     in_channels=comb_channels[i-1],

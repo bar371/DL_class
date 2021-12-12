@@ -83,11 +83,9 @@ def run_experiment(
     #   for you automatically.
     fit_res = None
     # ====== YOUR CODE: ======
-    # Data - use DataLoader
     df_train = DataLoader(ds_train, batch_size=batches,drop_last=True)
     df_test = DataLoader(ds_test, batch_size=batches, drop_last=True)
     CIFAR_10_classes = 10
-    # Create model, loss and optimizer instances
     channels = []
     for _ in range(layers_per_block):
         for channel in filters_per_layer:

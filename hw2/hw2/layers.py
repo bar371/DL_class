@@ -82,7 +82,6 @@ class LeakyReLU(Layer):
 
         # TODO: Implement the LeakyReLU operation.
         # ====== YOUR CODE: ======
-        import numpy as np
         out = torch.max(self.alpha * x, x)
         # ========================
 
@@ -119,7 +118,6 @@ class ReLU(LeakyReLU):
     def __init__(self):
         # ====== YOUR CODE: ======
         super().__init__(alpha=0)
-
         # ========================
 
     def __repr__(self):
@@ -148,7 +146,6 @@ class Sigmoid(Layer):
         # ====== YOUR CODE: ======
         out = 1 / (1 + torch.exp(-x))
         self.grad_cache['sigmoid'] = out
-
         # ========================
 
         return out
@@ -344,12 +341,11 @@ class CrossEntropyLoss(Layer):
 
         # TODO: Calculate the gradient w.r.t. the input x.
         # ====== YOUR CODE: ======
-        # div of -xy is -1 with y==chosen class, else zero
         dxy = torch.zeros(x.shape)
         dxy[torch.arange(N), y] = -1
-        x_exps = torch.exp(x) # inner div
-        log_derivative = 1 / (torch.sum(x_exps,dim=1)) # log div
-        dxlog = x_exps.T * log_derivative # final log div
+        x_exps = torch.exp(x)
+        log_derivative = 1 / (torch.sum(x_exps,dim=1))
+        dxlog = x_exps.T * log_derivative
         dx = dxy + dxlog.T
         dx = (dx * dout) / N
         # ========================
@@ -412,7 +408,6 @@ class Sequential(Layer):
         # ====== YOUR CODE: ======
         for i in range(len(self.layers)):
             x = self.layers[i].forward(x, **kw)
-
         out = x
         # ========================
 
@@ -426,8 +421,8 @@ class Sequential(Layer):
         #  gradient. Behold the backpropagation algorithm in action!
         # ====== YOUR CODE: ======
         for i in range(1,len(self.layers)):
-            dout = self.layers[-i].backward(dout) # from end to 1
-        din = self.layers[0].backward(dout) # adding first layer
+            dout = self.layers[-i].backward(dout)
+        din = self.layers[0].backward(dout)
         # ========================
         # din = dout
         return din
@@ -503,16 +498,13 @@ class MLP(Layer):
             
         # TODO: Build the MLP architecture as described.
         # ====== YOUR CODE: ======
-        #first layer
         layers.append(Linear(in_features, hidden_features[0]))
-        layers.append(activation_cls()) # activation of first
+        layers.append(activation_cls())
 
         for h in range(1,len(hidden_features)):
-            #hidden layers
             layers.append(Linear(hidden_features[h-1],hidden_features[h]))
             layers.append(activation_cls())
 
-        # final hidden and output
         layers.append(Linear(hidden_features[-1],num_classes))
         # ========================
 
