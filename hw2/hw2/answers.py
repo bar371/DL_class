@@ -54,15 +54,17 @@ def part2_optim_hp():
 def part2_dropout_hp():
     wstd, lr, = 0, 0
     # ====== YOUR CODE: ======
-    wstd = 1e-1
-    lr = 1e-3
+    wstd = 2e-1
+    lr = 2e-3
     # ========================
     return dict(wstd=wstd, lr=lr)
 
 
-part2_q1 = r"""
-**Your answer:**
-"""
+part2_q1 = r"""**Yes, the graph match our expection, the droput layers serve as a form of regulariztion, with it the 
+train accuracy decreases while the test accuracy increase, e.g. leading to better over-all model.:** ** regarding the 
+high vs low dropout, we see that the high-drop out lead to an impaired ability to generalize and receive solid results
+ on the test step. However the low-range drop-rate served as a good hyper-param as it resulted in the higher accuracy
+ score on the testset."""
 
 part2_q2 = r"""
 **Your answer:**
