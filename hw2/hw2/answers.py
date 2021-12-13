@@ -39,7 +39,7 @@ def part2_optim_hp():
     wstd = 0.15
     lr_vanilla = 0.01
     lr_momentum = 0.01
-    lr_rmsprop = 0.01
+    lr_rmsprop = 0.0001
     reg = 0.008
     # ========================
     return dict(

@@ -97,6 +97,7 @@ class MomentumSGD(Optimizer):
         # ========================
 
     def step(self):
+        self.t = 0
         for p, dp in self.params:
             if dp is None:
                 continue
@@ -110,7 +111,7 @@ class MomentumSGD(Optimizer):
             v_t_1 = self.momentum * self.momentums[self.t] + grad_step
             self.momentums[self.t] = v_t_1
             p += v_t_1
-        self.t += 1
+            self.t += 1
 
             # ========================
 
@@ -132,7 +133,7 @@ class RMSProp(Optimizer):
 
         # TODO: Add your own initializations as needed.
         # ====== YOUR CODE: ======
-        self.rms = torch.zeros((len(self.params)))
+        self.rms = [0] * len(self.params)
         self.t = 0
         # ========================
 
