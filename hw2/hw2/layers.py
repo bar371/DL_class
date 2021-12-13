@@ -371,19 +371,27 @@ class Dropout(Layer):
         #  Notice that contrary to previous layers, this layer behaves
         #  differently a according to the current training_mode (train/test).
         # ====== YOUR CODE: ======
-        out = None
+        if self.training_mode:
+            input_tensor = x.new_full(x.shape,self.p)
+            drop = torch.bernoulli(input_tensor)
+            out = x * drop
+        else:
+            out = x * (1-self.p)
         # ========================
-
+        self.grad_cache["input_tensor"] = input_tensor            
         return out
 
     def backward(self, dout):
         # TODO: Implement the dropout backward pass.
         # ====== YOUR CODE: ======
-
+        input_tensor = self.grad_cache["input_tensor"]
+        if self.training_mode:
+            dx = dout * input_tensor
         # ========================
-        dx = None
+        else: 
+            dx = dout * (1-self.p)
         return dx
-
+    
     def params(self):
         return []
 
@@ -498,14 +506,22 @@ class MLP(Layer):
             
         # TODO: Build the MLP architecture as described.
         # ====== YOUR CODE: ======
+        #first layer
         layers.append(Linear(in_features, hidden_features[0]))
-        layers.append(activation_cls())
+        layers.append(activation_cls()) # activation of first
+        if dropout>0:
+            layers.append(Dropout(dropout))
 
         for h in range(1,len(hidden_features)):
+            #hidden layers
             layers.append(Linear(hidden_features[h-1],hidden_features[h]))
             layers.append(activation_cls())
+            if dropout>0:
+                layers.append(Dropout(dropout))
 
+        # final hidden and output
         layers.append(Linear(hidden_features[-1],num_classes))
+
         # ========================
 
         self.sequence = Sequential(*layers)
