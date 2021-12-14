@@ -62,7 +62,9 @@ def chars_to_onehot(text: str, char_to_idx: dict) -> Tensor:
     """
     # TODO: Implement the embedding.
     # ====== YOUR CODE: ======
-    
+    result = torch.zeros([len(text),len(char_to_idx)],dtype=torch.int8)
+    for n,d in enumerate(text):
+        result[n, char_to_idx[d]] = 1.
     # ========================
     return result
 
@@ -79,10 +81,12 @@ def onehot_to_chars(embedded_text: Tensor, idx_to_char: dict) -> str:
     """
     # TODO: Implement the reverse-embedding.
     # ====== YOUR CODE: ======
-    
+    result=''
+    idx = (embedded_text == 1).nonzero()[:, 1]  
+    for i in idx.numpy():
+        result+=(idx_to_char[i])
     # ========================
     return result
-
 
 def chars_to_labelled_samples(text: str, char_to_idx: dict, seq_len: int, device="cpu"):
     """
