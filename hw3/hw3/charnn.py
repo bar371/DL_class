@@ -112,7 +112,12 @@ def chars_to_labelled_samples(text: str, char_to_idx: dict, seq_len: int, device
     #  3. Create the labels tensor in a similar way and convert to indices.
     #  Note that no explicit loops are required to implement this function.
     # ====== YOUR CODE: ======
-    
+    num_samples = (len(text) - 1) // seq_len
+    text_remain = (num_samples * seq_len)
+    embed_text = chars_to_onehot(text, char_to_idx)
+    samples = embed_text[:text_remain,:].reshape(num_samples,seq_len,len(char_to_idx)).to(device)
+    idx = (embed_text[1:text_remain+1]==1).nonzero()[:, 1]
+    labels = idx.reshape(num_samples,seq_len).to(device)
     # ========================
     return samples, labels
 
