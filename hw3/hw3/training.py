@@ -221,12 +221,14 @@ class RNNTrainer(Trainer):
     def train_epoch(self, dl_train: DataLoader, **kw):
         # TODO: Implement modifications to the base method, only if needed!
         # ====== YOUR CODE: ======
+        self.prev_h = None
         # ========================
         return super().train_epoch(dl_train, **kw)
 
     def test_epoch(self, dl_test: DataLoader, **kw):
         # TODO: Implement modifications to the base method, only if needed!
         # ====== YOUR CODE: ======
+        self.prev_h = None
         # ========================
         return super().test_epoch(dl_test, **kw)
 
@@ -245,6 +247,14 @@ class RNNTrainer(Trainer):
         #  - Calculate number of correct char predictions
         # ====== YOUR CODE: ======
 
+        print(x.shape)
+        pred, h = self.model(x, self.prev_h)
+        loss = sum(self.loss_fn(pred[:,i], y[:,i]) for i in range(seq_len))
+        loss.backward()
+        self.optimizer.step()
+        y_max = y.argmax(dim=-1)
+        num_correct = torch.sum((y_max == y).detach())
+        self.prev_h = h.detach().clone()
         # ========================
 
         # Note: scaling num_correct by seq_len because each sample has seq_len
@@ -264,7 +274,9 @@ class RNNTrainer(Trainer):
             #  - Loss calculation
             #  - Calculate number of correct predictions
             # ====== YOUR CODE: ======
-
+            pred, h = self.model(x, training=True)
+            loss = sum(self.loss_fn(pred[:, i], y[:, i]) for i in range(seq_len))
+            num_correct = torch.sum(torch.tensor(y.argmax(dim=-1) == pred))
             # ========================
 
         return BatchResult(loss.item(), num_correct.item() / seq_len)
