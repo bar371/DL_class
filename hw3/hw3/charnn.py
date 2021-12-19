@@ -134,8 +134,12 @@ def hot_softmax(y, dim=0, temperature=1.0):
     # TODO: Implement based on the above.
     # ====== YOUR CODE: ======
     assert temperature != 0 , 'temperature must be non-zero'
-    result = torch.exp(-1*(y/temperature))/ torch.sum(torch.exp((1*(y/temperature))), dim=dim)
+    y = y / temperature
+    y_max = torch.max(y)
+    e_xp = torch.exp(y-y_max)
+    result = e_xp / e_xp.sum(dim=0)
     # ========================
+
     return result
 
 
@@ -172,13 +176,13 @@ def generate_from_model(model, start_sequence, n_chars, char_maps, T):
     # ====== YOUR CODE: ======
     input_to_model = chars_to_onehot(start_sequence, char_to_idx=char_to_idx).unsqueeze(0).float().to(device)
     with torch.no_grad():
+        h = None
         for i in range(n_chars - len(start_sequence)):
-            y, h = model(input_to_model)
-            probs = hot_softmax(y=y[0,-1],dim=-1, temperature=T)
-            y = torch.multinomial(probs, 1).item()
-            out_text += idx_to_char[y]
-            input_to_model = chars_to_onehot(start_sequence, char_to_idx=char_to_idx).unsqueeze(0).float().to(device)
-
+            preds, h = model(input_to_model, h)
+            probs = hot_softmax(y=preds[0,-1,:],dim=-1, temperature=T)
+            y = torch.multinomial(probs, 1)
+            out_text += idx_to_char[y.item()]
+            input_to_model = chars_to_onehot(out_text, char_to_idx=char_to_idx).unsqueeze(0).float().to(device)
     # ========================
 
     return out_text
@@ -265,7 +269,7 @@ class MultilayerGRU(nn.Module):
 
         for i in range(self.n_layers):
             self.layer_params.append(dict())
-        
+
         for i in range(self.n_layers):
             in_dim = in_dim if i ==0 else h_dim
             self.layer_params[i]['xz'] = nn.Linear(in_dim, h_dim,bias=False)
@@ -280,6 +284,7 @@ class MultilayerGRU(nn.Module):
             self.add_module('hr_{}'.format(i), self.layer_params[i]['hr'])
             self.add_module('xg_{}'.format(i), self.layer_params[i]['xg'])
             self.add_module('hg_{}'.format(i), self.layer_params[i]['hg'])
+
         self.out = nn.Linear(h_dim, out_dim, bias=True)
         self.add_module('out', self.out)
 
@@ -320,26 +325,23 @@ class MultilayerGRU(nn.Module):
         #  Tip: You can use torch.stack() to combine multiple tensors into a
         #  single tensor in a differentiable manner.
         # ====== YOUR CODE: ======
-        layer_output = []
+        layer_output = torch.zeros((batch_size, seq_len, self.out_dim))
+        # layer_output = []
         for t in range(seq_len):
-            x = input[:, t, :]
+            x = input[:, t]
             for k in range(self.n_layers):
-                if k != self.n_layers -1:
-                    h = layer_states[k]
-                    if k > 0:
-                        x = h
-                    # print(self.layer_params[k])
-                    x = torch.dropout(x, self.dropout, self.training)
-                    update_gate = torch.sigmoid(self.layer_params[k]['xz'](x) + self.layer_params[k]['hz'](h))
-                    reset_gate = torch.sigmoid(self.layer_params[k]['xr'](x) + self.layer_params[k]['hr'](h))
-                    candidate_gate = torch.tanh(self.layer_params[k]['xg'](x) + self.layer_params[k]['hg'](h * reset_gate))
-                    layer_states[k] = (update_gate * h + (1- update_gate) * candidate_gate)
-                else:
-                    x = layer_states[k]
-                    layer_output += self.out(x)
+                h_prev = layer_states[k]
+                x = torch.dropout(x, self.dropout, self.training)
+                update_gate = torch.sigmoid(self.layer_params[k]['xz'](x) + self.layer_params[k]['hz'](h_prev))
+                reset_gate = torch.sigmoid(self.layer_params[k]['xr'](x) + self.layer_params[k]['hr'](h_prev))
+                candidate_gate = torch.tanh(self.layer_params[k]['xg'](x) + self.layer_params[k]['hg'](h_prev * reset_gate))
+                layer_states[k] = (update_gate * h_prev + (1- update_gate) * candidate_gate).clone()
+                x = layer_states[k]
+            layer_output[:, t , :] = self.out(x)
+            # layer_output += self.out(x)
 
         hidden_state = torch.stack(layer_states, dim=1)
-        layer_output = torch.stack(layer_output, dim=1)
+        # layer_output = torch.stack(layer_output, dim=1)
         layer_output = layer_output.reshape((batch_size, seq_len, self.in_dim))
         # ========================
         return layer_output, hidden_state
