@@ -134,7 +134,7 @@ def hot_softmax(y, dim=0, temperature=1.0):
     # TODO: Implement based on the above.
     # ====== YOUR CODE: ======
     assert temperature != 0 , 'temperature must be non-zero'
-    result = torch.exp((y/temperature))/ torch.sum(torch.exp(y/temperature), dim=dim)
+    result = torch.exp(-1*(y/temperature))/ torch.sum(torch.exp((1*(y/temperature))), dim=dim)
     # ========================
     return result
 
