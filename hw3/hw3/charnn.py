@@ -82,8 +82,8 @@ def onehot_to_chars(embedded_text: Tensor, idx_to_char: dict) -> str:
     # TODO: Implement the reverse-embedding.
     # ====== YOUR CODE: ======
     result=''
-    idx = (embedded_text == 1).nonzero()[:, 1]  
-    for i in idx.numpy():
+    idx = ((embedded_text == 1).nonzero()[:, 1]).tolist()
+    for i in idx:
         result+=(idx_to_char[i])
     # ========================
     return result
