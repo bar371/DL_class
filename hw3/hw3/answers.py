@@ -22,7 +22,14 @@ def part1_rnn_hyperparams():
     )
     # TODO: Set the hyperparameters to train the model.
     # ====== YOUR CODE: ======
-
+    hypers['batch_size']=32
+    hypers['seq_len']=78
+    hypers['h_dim']=256
+    hypers['n_layers']=3
+    hypers['dropout']=0.3
+    hypers['learn_rate']=0.05
+    hypers['lr_sched_factor']=0.01
+    hypers['lr_sched_patience']=1
     # ========================
     return hypers
 
@@ -32,7 +39,9 @@ def part1_generation_params():
     temperature = 0.0001
     # TODO: Tweak the parameters to generate a literary masterpiece.
     # ====== YOUR CODE: ======
-
+    start_seq='ACT 1'
+    # start_seq = 'ACT 1: Juliet: Wherefore Art Thou Romeo'
+    temperature = 0.00001
     # ========================
     return start_seq, temperature
 
