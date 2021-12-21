@@ -325,7 +325,7 @@ class MultilayerGRU(nn.Module):
         #  Tip: You can use torch.stack() to combine multiple tensors into a
         #  single tensor in a differentiable manner.
         # ====== YOUR CODE: ======
-        layer_output = torch.zeros((batch_size, seq_len, self.out_dim))
+        layer_output = torch.zeros(batch_size, seq_len, self.out_dim,device=input.device)
         # layer_output = []
         for t in range(seq_len):
             x = input[:, t]
