@@ -30,6 +30,16 @@ def part1_rnn_hyperparams():
     hypers['learn_rate']=0.05
     hypers['lr_sched_factor']=0.01
     hypers['lr_sched_patience']=1
+    '''
+    hypers['batch_size']=50
+    hypers['seq_len']=78
+    hypers['h_dim']=156
+    hypers['n_layers']=3
+    hypers['dropout']=0.3
+    hypers['learn_rate']=1e-3
+    hypers['lr_sched_factor']=0.1
+    hypers['lr_sched_patience']=5
+    '''
     # ========================
     return hypers
 
@@ -40,7 +50,7 @@ def part1_generation_params():
     # TODO: Tweak the parameters to generate a literary masterpiece.
     # ====== YOUR CODE: ======
     start_seq='ACT 1'
-    # start_seq = 'ACT 1: Juliet: Wherefore Art Thou Romeo'
+    # start_seq = 'O Romeo, Romeo! wherefore art thou Romeo?'
     temperature = 0.00001
     # ========================
     return start_seq, temperature
@@ -59,7 +69,9 @@ We don't shuffle the order while training because the beginning text affects the
 """
 
 part1_q4 = r"""
-**Your answer:**
+1. The tempature hyperparameter affects the probablities of the chars from the softmax. During training we want the model to choose the most likely chars and by lowering the tempature we are giving a higher probability to those chars.  
+2. When the tempature is very high there tends to be more mistakes but there is also more diversity. 
+3. When we lower the tempature we our increasing our models's confidence but also causing it to be more conservative in it's samples because it sticks to the more probable possiblities. When the tempature approaches 0 it is most likely to get stuck in an infinite loop, this happens because your model becomes very confident and doesn't diversify the text. 
 """
 # ==============
 
