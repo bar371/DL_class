@@ -216,9 +216,6 @@ class SequenceBatchSampler(torch.utils.data.Sampler):
         idx = None  # idx should be a 1-d list of indices.
         # ====== YOUR CODE: ======
         idx = torch.arange(len(self.dataset) - len(self.dataset) % self.batch_size)
-        # for batch in range(0, len(self.dataset), self.batch_size):
-        #     if batch + self.batch_size < len(self.dataset):
-                # idx.extend(range(batch, batch + self.batch_size))
         # ========================
         return iter(idx)
 
@@ -326,7 +323,6 @@ class MultilayerGRU(nn.Module):
         #  single tensor in a differentiable manner.
         # ====== YOUR CODE: ======
         layer_output = torch.zeros(batch_size, seq_len, self.out_dim,device=input.device)
-        # layer_output = []
         for t in range(seq_len):
             x = input[:, t]
             for k in range(self.n_layers):
@@ -338,10 +334,6 @@ class MultilayerGRU(nn.Module):
                 layer_states[k] = (update_gate * h_prev + (1- update_gate) * candidate_gate).clone()
                 x = layer_states[k]
             layer_output[:, t , :] = self.out(x)
-            # layer_output += self.out(x)
-
         hidden_state = torch.stack(layer_states, dim=1)
-        # layer_output = torch.stack(layer_output, dim=1)
-        layer_output = layer_output.reshape((batch_size, seq_len, self.in_dim))
         # ========================
         return layer_output, hidden_state
