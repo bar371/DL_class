@@ -57,8 +57,7 @@ def part1_generation_params():
 
 
 part1_q1 = r"""
-**Your answer:**
-"""
+If the sequence is too large then the RNN can fall into the vanishing gradient problem. To avoid this we split the data into smaller sequences. Another reason is that using one sample can cause the model to overfit therefore we break it up into smaller sequences. """
 
 part1_q2 = r"""
 **Your answer:**
