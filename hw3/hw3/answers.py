@@ -55,7 +55,7 @@ part1_q2 = r"""
 """
 
 part1_q3 = r"""
-**Your answer:**
+We don't shuffle the order while training because the beginning text affects the later text and we want the order to be maintained. 
 """
 
 part1_q4 = r"""
