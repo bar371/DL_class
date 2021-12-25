@@ -55,7 +55,7 @@ There are several reasons for using sequences and not the whole corpus while tra
     3. Vanishing Gradients - Running on long sequences might cause the model to fall into the vanishing gradient problem.
      
 Of course, splitting the corpus into very small sequences (e.g. 1) might lead to overfitting.
-If the sequence is too large then the RNN can fall into the vanishing gradient problem. To avoid this we split the data into smaller sequences.  """
+"""
 
 part1_q2 = r"""
 ** This is due to the passing the hidden layer across sequences, as the model takes in a new sequence input 
