@@ -175,8 +175,7 @@ def generate_from_model(model, start_sequence, n_chars, char_maps, T):
     #  See torch.no_grad().
     # ====== YOUR CODE: ======
     with torch.no_grad():
-        input_to_model = chars_to_onehot(start_sequence, char_to_idx=char_to_idx).float().unsqueeze(0)
-        input_to_model.to(device=device)
+        input_to_model = chars_to_onehot(start_sequence, char_to_idx=char_to_idx).float().unsqueeze(0).to(device)
         h = None
         for i in range(n_chars - len(start_sequence)):
             preds, h = model(input_to_model, h)
@@ -184,8 +183,7 @@ def generate_from_model(model, start_sequence, n_chars, char_maps, T):
             y = torch.multinomial(probs, num_samples=1)
             cur_text = idx_to_char[y.item()]
             out_text += cur_text
-            input_to_model = chars_to_onehot(cur_text, char_to_idx=char_to_idx).float().unsqueeze(0)
-            input_to_model.to(device=device)
+            input_to_model = chars_to_onehot(cur_text, char_to_idx=char_to_idx).float().unsqueeze(0).to(device)
 
     # ========================
 
