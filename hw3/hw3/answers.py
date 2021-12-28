@@ -23,13 +23,13 @@ def part1_rnn_hyperparams():
     # TODO: Set the hyperparameters to train the model.
     # ====== YOUR CODE: ======
     hypers['batch_size']=128
-    hypers['seq_len']=50
-    hypers['h_dim']=128
+    hypers['seq_len']=60
+    hypers['h_dim']=256
     hypers['n_layers']=3
-    hypers['dropout']=0.3
-    hypers['learn_rate']=0.0001
-    hypers['lr_sched_factor']=0.2
-    hypers['lr_sched_patience']=5
+    hypers['dropout']=0.25
+    hypers['learn_rate']=0.0005
+    hypers['lr_sched_factor']=0.23
+    hypers['lr_sched_patience']=4
 
     # ========================
     return hypers
@@ -43,7 +43,7 @@ def part1_generation_params():
     # start_seq='ACT 1'
     start_seq='All the world\'s a stage'
     # start_seq = 'O Romeo, Romeo! wherefore art thou Romeo?'
-    temperature = 0.0000001
+    temperature = 0.2
     # ========================
     return start_seq, temperature
 
