@@ -1,3 +1,5 @@
+import pickle
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -26,25 +28,29 @@ class Discriminator(nn.Module):
         #  flatten the features.
         # ====== YOUR CODE: ======
         in_channels = self.in_size[0]
-        ndf = 64
+        feature_mapping = 64
         self.discriminator = nn.Sequential(
             # input is (nc) x 64 x 64
-            nn.Conv2d(in_channels, ndf, 4, 2, 1, bias=False),
+            nn.Conv2d(in_channels, feature_mapping, 4, 2, 1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf) x 32 x 32
-            nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ndf * 2),
+            nn.Conv2d(feature_mapping, feature_mapping * 2, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(feature_mapping * 2),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf*2) x 16 x 16
-            nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ndf * 4),
+            nn.Conv2d(feature_mapping * 2, feature_mapping * 4, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(feature_mapping * 4),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf*4) x 8 x 8
-            nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ndf * 8),
+            nn.Conv2d(feature_mapping * 4, feature_mapping * 8, 4, 2, 1, bias=False),
+            nn.Dropout(0.5),
+
+            nn.BatchNorm2d(feature_mapping * 8),
+
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf*8) x 4 x 4
-            nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
+            nn.Conv2d(feature_mapping * 8, 1, 4, 1, 0, bias=False),
+            # nn.Sigmoid(),
         )
 
         # ========================
@@ -177,13 +183,14 @@ def discriminator_loss_fn(y_data, y_generated, data_label=0, label_noise=0.0):
     #  See pytorch's BCEWithLogitsLoss for a numerically stable implementation.
     # ====== YOUR CODE: ======
     noise_side = label_noise/2
-    m = torch.distributions.Uniform(data_label-noise_side, data_label+noise_side)
-    noise = m.sample(sample_shape=y_data.shape)
-    bceloss = BCEWithLogitsLoss()
-    loss_data = bceloss(y_data, noise)
-    m = torch.distributions.Uniform(-noise_side, noise_side)
-    noise = m.sample(sample_shape=y_generated.shape)
-    loss_generated =  bceloss(y_generated, noise)
+    m = torch.distributions.uniform.Uniform(data_label-noise_side, data_label+noise_side)
+    noise = m.sample(sample_shape=y_data.shape).to(y_data.device)
+    data_cnt = BCEWithLogitsLoss()
+    loss_data = data_cnt(y_data, noise)
+    m = torch.distributions.uniform.Uniform(-noise_side, noise_side)
+    noise = m.sample(sample_shape=y_generated.shape).to(y_generated.device)
+    gen_cnt = BCEWithLogitsLoss()
+    loss_generated = gen_cnt(y_generated, noise)
     # ========================
     return loss_data + loss_generated
 
@@ -204,7 +211,12 @@ def generator_loss_fn(y_generated, data_label=0):
     #  Think about what you need to compare the input to, in order to
     #  formulate the loss in terms of Binary Cross Entropy.
     # ====== YOUR CODE: ======
-    labels = torch.tensor([data_label]*len(y_generated), dtype=torch.float)
+    # labels = torch.tensor([data_label]*len(y_generated), dtype=torch.float, device=y_generated.device)
+    if data_label == 1:
+        labels = torch.ones(y_generated.shape, device=y_generated.device, dtype=torch.float)
+    else:
+        labels = torch.zeros(y_generated.shape, device=y_generated.device, dtype=torch.float)
+    # labels  = labels.reshape(len(labels), 1)
     loss_f = BCEWithLogitsLoss()
     loss = loss_f(y_generated, labels)
     # ========================
@@ -231,6 +243,13 @@ def train_batch(
     #  2. Calculate discriminator loss
     #  3. Update discriminator parameters
     # ====== YOUR CODE: ======
+    dsc_model.train(True)
+    dsc_model.zero_grad()
+    gen_samples = gen_model.sample(len(x_data),with_grad=False)
+    dsc_loss = dsc_loss_fn(dsc_model(x_data), dsc_model(gen_samples))
+    dsc_loss.backward()
+    dsc_optimizer.step()
+
 
     # ========================
 
@@ -239,7 +258,12 @@ def train_batch(
     #  2. Calculate generator loss
     #  3. Update generator parameters
     # ====== YOUR CODE: ======
-
+    gen_model.train(True)
+    gen_model.zero_grad()
+    gen_samples = gen_model.sample(len(x_data),with_grad=True)
+    gen_loss = gen_loss_fn(dsc_model(gen_samples))
+    gen_loss.backward()
+    gen_optimizer.step()
     # ========================
 
     return dsc_loss.item(), gen_loss.item()
@@ -262,7 +286,12 @@ def save_checkpoint(gen_model, dsc_losses, gen_losses, checkpoint_file):
     #  You should decide what logic to use for deciding when to save.
     #  If you save, set saved to True.
     # ====== YOUR CODE: ======
-
+    # if gen_losses[-1] <= np.min(gen_losses):?
+        # best gen so far
+    pickle.dump(gen_losses, open(checkpoint_file[:-2] + 'gen_losses','wb'))
+    pickle.dump(dsc_losses, open(checkpoint_file[:-2] + 'dcs_losses','wb'))
+    torch.save(gen_model, open(checkpoint_file, 'wb'))
+    saved = True
     # ========================
 
     return saved
