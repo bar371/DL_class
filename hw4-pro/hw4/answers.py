@@ -19,30 +19,39 @@ def part2_vae_hyperparams():
     )
     # TODO: Tweak the hyperparameters to generate a former president.
     # ====== YOUR CODE: ======
-
+    hypers = dict(
+        batch_size=20, h_dim=128, z_dim=26, x_sigma2=0.001, learn_rate=0.0003, betas=(0.9, 0.999),
+    )
     # ========================
     return hypers
 
 
 part2_q1 = r"""
 **Your answer:**
-
+$\sigma^2$ is used to measure the variance of the distribution. By increasing it's value we get images with more variablity and by decreasing it we get images that are more similar to our dataset 
 """
 
 part2_q2 = r"""
 **Your answer:**
+1.  
+The reconstruction loss is used to measure the difference between the outputs and the inputs.
 
+K-L divergence measures the amount of overlap within the latent space and is added into the loss function. This is an important measurement in VAE because it's inputs are econded as nortmal distribution and by regualizing it increases the amount of overlap.
+
+2. By minimizing the K-L loss the encoder distributes the encodings densely near the center of the latent space
+
+3. The benefit of this is that it makes the distribution of the encoder output as close to possible to the normal gaussian distribution resulting in more accurate results. 
 """
 
 part2_q3 = r"""
 **Your answer:**
-
-
+It isn't possible to calculate the evidence distribution so instead we we can obtain a lower-bound for p(x) and get an estimation as close as possible. 
+  
 """
 
 part2_q4 = r"""
 **Your answer:**
-
+The value of sigma needs to be between 0 and 1, which results in really small values and can lead to the vanishing problem. To avoid this we use the log to have more space to work with since the interval is from negative infinty to 0.
 """
 
 # ==============
